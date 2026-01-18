@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import io
 import sys
+import os
 import tempfile
 import urllib.request
 import zipfile
@@ -29,8 +30,9 @@ _INIT_MARKER_NAME = ".init_complete"
 _init_attempted = False
 _DEFAULT_USER_DATA_DIR = Path.home() / ".fastwebfetch" / "patchright-profile"
 _DEFAULT_EXTENSION_DIR = Path(__file__).resolve().parent / "extensions" / "bypass-paywalls-chrome-clean"
-_DEFAULT_EXTENSION_URL = (
-    "https://github.com/bypass-paywalls/bypass-paywalls-chrome-clean/archive/refs/heads/master.zip"
+_DEFAULT_EXTENSION_URL = os.getenv(
+    "FASTWEBFETCH_PAYWALL_URL",
+    "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass-paywalls-chrome-clean-master.zip",
 )
 
 
@@ -70,8 +72,14 @@ def _ensure_extension_assets(extension_dir: Path) -> None:
 
     with tempfile.TemporaryDirectory() as temp_dir:
         zip_path = Path(temp_dir) / "bypass-paywalls-chrome-clean.zip"
-        with urllib.request.urlopen(_DEFAULT_EXTENSION_URL) as response:
-            zip_path.write_bytes(response.read())
+        try:
+            with urllib.request.urlopen(_DEFAULT_EXTENSION_URL) as response:
+                zip_path.write_bytes(response.read())
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to download paywall extension from {_DEFAULT_EXTENSION_URL}. "
+                "Set FASTWEBFETCH_PAYWALL_URL to a reachable ZIP URL."
+            ) from exc
 
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(temp_dir)
