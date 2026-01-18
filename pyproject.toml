@@ -1,0 +1,29 @@
+[project]
+name = "fastwebfetch"
+version = "0.1.0"
+description = "Convert scraped HTML to cleaned Markdown for downstream processing."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "datasets>=2.15",
+    "beautifulsoup4>=4.12",
+    "markdownify>=0.9",
+    "mdformat>=0.7",
+    "tqdm>=4.65",
+    "pylatexenc @ git+https://github.com/trotsky1997/pylatexenc.git",
+    "patchright>=1.49.0,<2.0.0",
+    "requests>=2.31,<3.0",
+    "transformers>=4.41",
+    "torch>=2.2",
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+fastwebfetch-mcp = "mcp_server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "black>=24.3",
+    "ruff>=0.0.340",
+]
