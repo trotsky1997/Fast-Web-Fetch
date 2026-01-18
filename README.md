@@ -47,6 +47,22 @@ uv run main.py init
 uv run main.py "https://example.com"
 ```
 
+## How to use (one-shot)
+
+The fastest way to run once and get Markdown output:
+
+```bash
+uv sync
+uv run main.py init
+uv run main.py "https://example.com" > output.md
+```
+
+If you already ran `init`, just run:
+
+```bash
+uv run main.py "https://example.com" > output.md
+```
+
 ## Development
 
 - Use `uv run pytest` for tests once they exist.
