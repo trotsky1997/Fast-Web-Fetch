@@ -23,6 +23,7 @@ from main import fetch_page_html, md, run_init, summarize_text
 server = Server("fastwebfetch")
 _INIT_MARKER_NAME = ".init_complete"
 _init_attempted = False
+_DEFAULT_USER_DATA_DIR = Path.home() / ".fastwebfetch" / "patchright-profile"
 
 
 def _ensure_initialized(browser_data_dir: str) -> None:
@@ -105,8 +106,8 @@ async def handle_call_tool(
         raise ValueError("summary_only must be a boolean")
 
     try:
-        browser_data_dir = ".patchright-profile"
-        _ensure_initialized(browser_data_dir)
+        browser_data_dir = _DEFAULT_USER_DATA_DIR
+        _ensure_initialized(str(browser_data_dir))
         html = fetch_page_html(
             url,
             user_data_dir=browser_data_dir,
@@ -139,6 +140,7 @@ async def handle_call_tool(
 
 
 async def main_async() -> None:
+    _ensure_initialized(str(_DEFAULT_USER_DATA_DIR))
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         await server.run(
             read_stream,
