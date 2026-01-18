@@ -180,7 +180,7 @@ async def handle_call_tool(
         summary = summarize_text(
             markdown,
             checkpoint="unsloth/gemma-3-270m-it",
-            device="auto",
+            device="cpu",
             max_new_tokens=512,
             temperature=0.2,
             top_p=0.9,
