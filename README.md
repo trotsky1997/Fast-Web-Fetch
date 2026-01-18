@@ -18,6 +18,13 @@ If you already ran `init`, just run:
 uv run main.py "https://example.com" > output.md
 ```
 
+or without git clone
+
+```bash
+uvx --from "git+https://github.com/trotsky1997/Fast-Web-Fetch.git" python -m main init
+uvx --from "git+https://github.com/trotsky1997/Fast-Web-Fetch.git" python -m main "https://example.com" > output.md
+```
+
 ## MCP quickstart
 
 Run the MCP server directly from the repo URL:
