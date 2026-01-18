@@ -42,7 +42,13 @@ def _ensure_initialized(browser_data_dir: str) -> None:
     stderr = io.StringIO()
     try:
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            run_init(["--browser-data-dir", str(user_data_path)])
+            run_init(
+                [
+                    "--browser-data-dir",
+                    str(user_data_path),
+                    "--skip-extension-check",
+                ]
+            )
         marker_path.write_text("ok", encoding="utf-8")
     finally:
         _init_attempted = True
