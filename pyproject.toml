@@ -21,6 +21,13 @@ dependencies = [
 [project.scripts]
 fastwebfetch-mcp = "mcp_server:main"
 
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main", "mcp_server"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.2",
