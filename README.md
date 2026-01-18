@@ -1,6 +1,17 @@
 # fastwebfetch
 
-This project converts extracted HTML into cleaned Markdown. It relies on the `datasets`, `markdownify`, `mdformat`, `tqdm`, `pylatexenc`, and `patchright` packages.
+Fastwebfetch scrapes web pages with Patchright and converts extracted HTML into cleaned Markdown. It relies on the `datasets`, `markdownify`, `mdformat`, `tqdm`, `pylatexenc`, and `patchright` packages.
+
+## Features
+
+- Patchright-based scraping with a persistent browser profile.
+- Optional paywall bypass via `bypass-paywalls-chrome-clean`.
+- Markdown cleanup with optional URL stripping and summary mode.
+
+## Requirements
+
+- Python 3.11+ (see `.python-version`).
+- `uv` for dependency management (recommended).
 
 ## uv workflow
 
@@ -11,7 +22,7 @@ This project converts extracted HTML into cleaned Markdown. It relies on the `da
 
 ## Initialization
 
--- Run `uv run main.py init` as a one-shot setup command to install Chromium via Patchright, create the persistent profile directory, and validate that the bundled `extensions/bypass-paywalls-chrome-clean` assets exist.
+- Run `uv run main.py init` as a one-shot setup command to install Chromium via Patchright, create the persistent profile directory, and validate that the bundled `extensions/bypass-paywalls-chrome-clean` assets exist.
 - The init command now downloads the GitFlic ZIP (`bypass-paywalls-chrome-clean-master.zip`) into `extensions/bypass-paywalls-chrome-clean` when that directory is absent; re-running init refreshes the assets. Use `--paywall-release-url` to pin a specific ZIP release, or `--skip-extension-check` when you prefer to manage the extension manually.
 - For manual installs, download the same GitFlic ZIP, unzip it into your desired location (keep the directory name stable), and either point to it with `--paywall-extension-dir` or skip the automated check.
 - The `init` command accepts the same `--browser-data-dir` as the scraper, plus `--channel` (defaults to `chromium`) to choose the Patchright browser and `--paywall-extension-dir` when you moved the bypass extension.
@@ -27,6 +38,14 @@ This project converts extracted HTML into cleaned Markdown. It relies on the `da
 - See `extensions/bypass-paywalls-chrome-clean/README.md` for the paywall extension configuration, updates, and bundled MIT license.
 - URLs are stripped from the markdown output by default to avoid link noise; add `--keep-urls` if you need to preserve HTTP/HTTPS links in the converted content.
 - Use `--summary-only` to generate a short model summary instead of full markdown. The default checkpoint is `HuggingFaceTB/SmolLM2-135M-Instruct`, adjustable via `--summary-model`.
+
+## Quickstart
+
+```bash
+uv sync
+uv run main.py init
+uv run main.py "https://example.com"
+```
 
 ## Development
 
@@ -44,8 +63,8 @@ uvx --from "git+https://github.com/trotsky1997/Fast-Web-Fetch.git" python -m mcp
 ```
 
 Notes:
-- Replace `<owner>/<repo>` and `<ref>` with your repo and commit/tag/branch.
-- `uvx` will resolve dependencies from `pyproject.toml` in the repo.
+- Update the git URL to your fork or a specific ref if needed.
+- `uvx` resolves dependencies from `pyproject.toml` in the repo.
 - The server uses a persistent Patchright profile at `.patchright-profile` by default.
 
 ### MCP config (generic JSON, copy/paste)
