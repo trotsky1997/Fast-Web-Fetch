@@ -179,9 +179,9 @@ async def handle_call_tool(
 
         summary = summarize_text(
             markdown,
-            checkpoint="HuggingFaceTB/SmolLM2-135M-Instruct",
-            device="cpu",
-            max_new_tokens=160,
+            checkpoint="google/gemma-3-270m-it",
+            device="auto",
+            max_new_tokens=512,
             temperature=0.2,
             top_p=0.9,
         )
