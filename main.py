@@ -1,18 +1,12 @@
 # -=encoding=utf-8=-
 import argparse
-import json
 import subprocess
 import sys
-import threading
 from pathlib import Path
 
-from re import template
 from markdownify import markdownify
 import mdformat
 
-import random
-from tqdm import tqdm
-from functools import lru_cache
 import re
 from pylatexenc.latex2text import LatexNodes2Text
 
