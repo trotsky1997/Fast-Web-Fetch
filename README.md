@@ -1,6 +1,6 @@
 # fastwebfetch
 
-Fastwebfetch scrapes web pages with Patchright and converts extracted HTML into cleaned Markdown. It relies on the `datasets`, `markdownify`, `mdformat`, `tqdm`, `pylatexenc`, and `patchright` packages.
+Fastwebfetch scrapes web pages with Patchright and converts extracted HTML into cleaned Markdown. It relies on the `markdownify`, `mdformat`, `tqdm`, `pylatexenc`, and `patchright` packages.
 
 ## How to use (one-shot)
 

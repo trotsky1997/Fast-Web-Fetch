@@ -2,6 +2,10 @@ import asyncio
 import contextlib
 import io
 import sys
+import tempfile
+import urllib.request
+import zipfile
+from shutil import rmtree
 from pathlib import Path
 from typing import Any, Optional
 
@@ -24,6 +28,10 @@ server = Server("fastwebfetch")
 _INIT_MARKER_NAME = ".init_complete"
 _init_attempted = False
 _DEFAULT_USER_DATA_DIR = Path.home() / ".fastwebfetch" / "patchright-profile"
+_DEFAULT_EXTENSION_DIR = Path(__file__).resolve().parent / "extensions" / "bypass-paywalls-chrome-clean"
+_DEFAULT_EXTENSION_URL = (
+    "https://github.com/bypass-paywalls/bypass-paywalls-chrome-clean/archive/refs/heads/master.zip"
+)
 
 
 def _ensure_initialized(browser_data_dir: str) -> None:
@@ -52,6 +60,37 @@ def _ensure_initialized(browser_data_dir: str) -> None:
         marker_path.write_text("ok", encoding="utf-8")
     finally:
         _init_attempted = True
+
+
+def _ensure_extension_assets(extension_dir: Path) -> None:
+    if extension_dir.exists():
+        return
+
+    extension_dir.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        zip_path = Path(temp_dir) / "bypass-paywalls-chrome-clean.zip"
+        with urllib.request.urlopen(_DEFAULT_EXTENSION_URL) as response:
+            zip_path.write_bytes(response.read())
+
+        with zipfile.ZipFile(zip_path) as archive:
+            archive.extractall(temp_dir)
+
+        extracted_dir = next(
+            (
+                path
+                for path in Path(temp_dir).iterdir()
+                if path.is_dir() and path.name.startswith("bypass-paywalls-chrome-clean-")
+            ),
+            None,
+        )
+        if extracted_dir is None:
+            raise RuntimeError("Unable to locate extracted paywall extension directory.")
+        source_dir = extracted_dir
+
+        if extension_dir.exists():
+            rmtree(extension_dir)
+        source_dir.replace(extension_dir)
 
 
 @server.list_tools()
@@ -114,14 +153,14 @@ async def handle_call_tool(
     try:
         browser_data_dir = _DEFAULT_USER_DATA_DIR
         _ensure_initialized(str(browser_data_dir))
+        if enable_paywall_bypass:
+            _ensure_extension_assets(_DEFAULT_EXTENSION_DIR)
         html = await fetch_page_html_async(
             url,
             user_data_dir=browser_data_dir,
             channel="chrome",
             headless=True,
-            bypass_extension_dir=Path("extensions/bypass-paywalls-chrome-clean")
-            if enable_paywall_bypass
-            else None,
+            bypass_extension_dir=_DEFAULT_EXTENSION_DIR if enable_paywall_bypass else None,
             wait_until="domcontentloaded",
             timeout_ms=30000,
         )
