@@ -32,3 +32,48 @@ This project converts extracted HTML into cleaned Markdown. It relies on the `da
 
 - Use `uv run pytest` for tests once they exist.
 - Format code with `uv run black main.py` and lint with `uv run ruff main.py`.
+
+## MCP usage
+
+### Run via uvx (git path)
+
+Use `uvx` to run the MCP server directly from a git URL without cloning:
+
+```bash
+uvx --from "git+https://github.com/trotsky1997/Fast-Web-Fetch.git" python -m mcp_server
+```
+
+Notes:
+- Replace `<owner>/<repo>` and `<ref>` with your repo and commit/tag/branch.
+- `uvx` will resolve dependencies from `pyproject.toml` in the repo.
+- The server uses a persistent Patchright profile at `.patchright-profile` by default.
+
+### MCP config (generic JSON, copy/paste)
+
+Use this JSON in any MCP client that supports stdio servers:
+
+```json
+{
+  "servers": {
+    "fastwebfetch": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/trotsky1997/Fast-Web-Fetch.git",
+        "python",
+        "-m",
+        "mcp_server"
+      ]
+    }
+  }
+}
+```
+
+### fetch_md tool
+
+The MCP server exposes a single tool named `fetch_md` with these inputs:
+
+- `url` (string, required): URL to scrape.
+- `enable_paywall_bypass` (boolean, optional): Load the bundled bypass extension.
+- `keep_urls` (boolean, optional): Keep HTTP/HTTPS URLs in the markdown output.
+- `summary_only` (boolean, optional): Return a short summary instead of full markdown.

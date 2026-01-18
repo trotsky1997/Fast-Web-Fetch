@@ -52,118 +52,25 @@ async def handle_list_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="fetch_md",
-            description="Fetch a URL using Patchright and return cleaned Markdown.",
+            description="Fetch a URL using Patchright and return cleaned Markdown or a summary.",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "url": {"type": "string", "description": "URL to scrape."},
-                    "browser_data_dir": {
-                        "type": "string",
-                        "description": "Persistent browser profile directory.",
-                        "default": ".patchright-profile",
-                    },
-                    "headless": {
-                        "type": "boolean",
-                        "description": "Run the browser without a visible window.",
-                        "default": True,
-                    },
                     "enable_paywall_bypass": {
                         "type": "boolean",
                         "description": "Load the bundled bypass extension before scraping.",
                         "default": False,
-                    },
-                    "paywall_extension_dir": {
-                        "type": "string",
-                        "description": "Path to the paywall bypass extension directory.",
-                        "default": "extensions/bypass-paywalls-chrome-clean",
                     },
                     "keep_urls": {
                         "type": "boolean",
                         "description": "Keep HTTP/HTTPS URLs in the markdown output.",
                         "default": False,
                     },
-                    "wait_until": {
-                        "type": "string",
-                        "description": "Playwright wait condition.",
-                        "default": "domcontentloaded",
-                        "enum": ["domcontentloaded", "load", "networkidle"],
-                    },
-                    "timeout_ms": {
-                        "type": "integer",
-                        "description": "Navigation timeout in milliseconds.",
-                        "default": 30000,
-                    },
-                },
-                "required": ["url"],
-            },
-        ),
-        types.Tool(
-            name="summary_only",
-            description="Fetch a URL and return a short model-generated summary.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "url": {"type": "string", "description": "URL to scrape."},
-                    "browser_data_dir": {
-                        "type": "string",
-                        "description": "Persistent browser profile directory.",
-                        "default": ".patchright-profile",
-                    },
-                    "headless": {
+                    "summary_only": {
                         "type": "boolean",
-                        "description": "Run the browser without a visible window.",
-                        "default": True,
-                    },
-                    "enable_paywall_bypass": {
-                        "type": "boolean",
-                        "description": "Load the bundled bypass extension before scraping.",
+                        "description": "Return a short summary instead of full markdown.",
                         "default": False,
-                    },
-                    "paywall_extension_dir": {
-                        "type": "string",
-                        "description": "Path to the paywall bypass extension directory.",
-                        "default": "extensions/bypass-paywalls-chrome-clean",
-                    },
-                    "keep_urls": {
-                        "type": "boolean",
-                        "description": "Keep HTTP/HTTPS URLs in the markdown output.",
-                        "default": False,
-                    },
-                    "wait_until": {
-                        "type": "string",
-                        "description": "Playwright wait condition.",
-                        "default": "domcontentloaded",
-                        "enum": ["domcontentloaded", "load", "networkidle"],
-                    },
-                    "timeout_ms": {
-                        "type": "integer",
-                        "description": "Navigation timeout in milliseconds.",
-                        "default": 30000,
-                    },
-                    "summary_model": {
-                        "type": "string",
-                        "description": "Model checkpoint to use for summarization.",
-                        "default": "HuggingFaceTB/SmolLM2-135M-Instruct",
-                    },
-                    "summary_device": {
-                        "type": "string",
-                        "description": "Device for the summarization model (cpu or cuda).",
-                        "default": "cpu",
-                    },
-                    "summary_max_new_tokens": {
-                        "type": "integer",
-                        "description": "Maximum tokens to generate for the summary.",
-                        "default": 160,
-                    },
-                    "summary_temperature": {
-                        "type": "number",
-                        "description": "Sampling temperature for the summary generation.",
-                        "default": 0.2,
-                    },
-                    "summary_top_p": {
-                        "type": "number",
-                        "description": "Top-p nucleus sampling for the summary generation.",
-                        "default": 0.9,
                     },
                 },
                 "required": ["url"],
@@ -179,66 +86,50 @@ async def handle_call_tool(
     if not arguments or "url" not in arguments:
         raise ValueError("Missing required argument: url")
 
-    if name not in {"fetch_md", "summary_only"}:
+    if name != "fetch_md":
         raise ValueError(f"Unknown tool: {name}")
 
     url = arguments["url"]
     if not isinstance(url, str):
         raise ValueError("url must be a string")
 
-    browser_data_dir = arguments.get("browser_data_dir", ".patchright-profile")
-    if not isinstance(browser_data_dir, str):
-        raise ValueError("browser_data_dir must be a string")
-
-    headless = arguments.get("headless", True)
     enable_paywall_bypass = arguments.get("enable_paywall_bypass", False)
-    paywall_extension_dir = arguments.get(
-        "paywall_extension_dir", "extensions/bypass-paywalls-chrome-clean"
-    )
     keep_urls = arguments.get("keep_urls", False)
-    wait_until = arguments.get("wait_until", "domcontentloaded")
-    timeout_ms = arguments.get("timeout_ms", 30000)
+    summary_only = arguments.get("summary_only", False)
 
-    if not isinstance(headless, bool):
-        raise ValueError("headless must be a boolean")
     if not isinstance(enable_paywall_bypass, bool):
         raise ValueError("enable_paywall_bypass must be a boolean")
-    if not isinstance(paywall_extension_dir, str):
-        raise ValueError("paywall_extension_dir must be a string")
     if not isinstance(keep_urls, bool):
         raise ValueError("keep_urls must be a boolean")
-    if wait_until not in {"domcontentloaded", "load", "networkidle"}:
-        raise ValueError("wait_until must be one of: domcontentloaded, load, networkidle")
-    if not isinstance(timeout_ms, int):
-        raise ValueError("timeout_ms must be an integer")
+    if not isinstance(summary_only, bool):
+        raise ValueError("summary_only must be a boolean")
 
     try:
+        browser_data_dir = ".patchright-profile"
         _ensure_initialized(browser_data_dir)
         html = fetch_page_html(
             url,
             user_data_dir=browser_data_dir,
             channel="chrome",
-            headless=headless,
-            bypass_extension_dir=Path(paywall_extension_dir)
+            headless=True,
+            bypass_extension_dir=Path("extensions/bypass-paywalls-chrome-clean")
             if enable_paywall_bypass
             else None,
-            wait_until=wait_until,
-            timeout_ms=timeout_ms,
+            wait_until="domcontentloaded",
+            timeout_ms=30000,
         )
         markdown = md(html, strip_urls=not keep_urls)
 
-        if name == "fetch_md":
+        if not summary_only:
             return [types.TextContent(type="text", text=markdown)]
 
         summary = summarize_text(
             markdown,
-            checkpoint=arguments.get(
-                "summary_model", "HuggingFaceTB/SmolLM2-135M-Instruct"
-            ),
-            device=arguments.get("summary_device", "cpu"),
-            max_new_tokens=arguments.get("summary_max_new_tokens", 160),
-            temperature=arguments.get("summary_temperature", 0.2),
-            top_p=arguments.get("summary_top_p", 0.9),
+            checkpoint="HuggingFaceTB/SmolLM2-135M-Instruct",
+            device="cpu",
+            max_new_tokens=160,
+            temperature=0.2,
+            top_p=0.9,
         )
         return [types.TextContent(type="text", text=summary)]
     except Exception as exc:

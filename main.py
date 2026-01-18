@@ -94,38 +94,38 @@ _ensure_resource_tracker_lock()
 _patch_resource_tracker_stop()
 
 def replace_image_tags_with_alt_text(md_text):
-    # 图片标签的正则表达式
+    # Regex for image tags
     img_pattern = r'!\[([^\]]*)\]\(([^\)]*)\)'
     
-    # 使用alt_text替换
+    # Replace with alt_text
     new_md_text = re.sub(img_pattern, r'\1', md_text)
     
     return new_md_text
 
 def replace_link_tags_with_alt_text(md_text):
-    # 链接标签的正则表达式
+    # Regex for link tags
     link_pattern = r'\[([^\]]*)\]\(([^\)]*)\)'
     
-    # 使用alt_text替换
+    # Replace with alt_text
     new_md_text = re.sub(link_pattern, r'\1', md_text)
     
     return new_md_text
 
 
 def replace_math_codes_with_text(md_text):
-    # 多行数学公式标签的正则表达式
+    # Regex for multiline math tags
     multiline_math_pattern = r'\$\$(.*?)\$\$'
     
-    # 使用LaTeX公式的普通文本替换
+    # Replace with plain-text LaTeX output
     new_md_text = re.sub(multiline_math_pattern, lambda m: "\n$$\n"+LatexNodes2Text().latex_to_text(m.group(1)) +"\n$$\n", md_text, flags=re.DOTALL)
     
     return new_md_text
 
 def replace_multiline_math_tags_with_text(md_text):
-    # 多行数学公式标签的正则表达式
+    # Regex for multiline math tags
     multiline_math_pattern = r'\$\$(.*?)\$\$'
     
-    # 使用LaTeX公式的普通文本替换
+    # Replace with plain-text LaTeX output
     new_md_text = re.sub(multiline_math_pattern, lambda m: "\n$$\n"+LatexNodes2Text(math_mode='text').latex_to_text(m.group(1)) +"\n$$\n", md_text, flags=re.DOTALL)
     
     return new_md_text
@@ -133,25 +133,25 @@ def replace_multiline_math_tags_with_text(md_text):
 
 
 def replace_math_tags_with_text(md_text):
-    # 数学公式标签的正则表达式
+    # Regex for math tags
     math_pattern = r'\$(.*?)\$'
     
-    # 使用LaTeX公式的普通文本替换
+    # Replace with plain-text LaTeX output
     new_md_text = re.sub(math_pattern, lambda m: "$"+LatexNodes2Text(math_mode='text').latex_to_text(m.group(1)) +"$", md_text)
     
     return new_md_text
 
 def remove_http_links(text):
-    # HTTP链接的正则表达式
+    # Regex for HTTP links
     http_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     
-    # 使用空字符串替换所有HTTP链接
+    # Replace all HTTP links with an empty string
     cleaned_text = re.sub(http_pattern, '', text)
     
     return cleaned_text
 
 # def clean(match):
-#     # 在这里添加你的清洗逻辑
+#     # Add your cleanup logic here
 #     smiles_string = match.group(0)
 #     if '.' in smiles_string:
 #         return smiles_string
@@ -160,10 +160,10 @@ def remove_http_links(text):
 #         return cleaned_smiles
 
 # def replace_smiles_with_cleaned(text):
-#     # SMILES字符串的正则表达式
+#     # Regex for SMILES strings
 #     smiles_pattern = r'[A-Za-z0-9@+\-\[\]\(\)=%#:.]*'
 
-#     # 使用re.sub()替换所有的SMILES字符串
+#     # Replace all SMILES strings using re.sub()
 #     cleaned_text = re.sub(smiles_pattern, clean, text)
 
 #     return cleaned_text
