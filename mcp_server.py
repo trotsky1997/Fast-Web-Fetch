@@ -17,7 +17,7 @@ except ImportError:
     )
     sys.exit(1)
 
-from main import fetch_page_html, md, run_init, summarize_text
+from main import fetch_page_html_async, md, run_init, summarize_text
 
 
 server = Server("fastwebfetch")
@@ -114,7 +114,7 @@ async def handle_call_tool(
     try:
         browser_data_dir = _DEFAULT_USER_DATA_DIR
         _ensure_initialized(str(browser_data_dir))
-        html = fetch_page_html(
+        html = await fetch_page_html_async(
             url,
             user_data_dir=browser_data_dir,
             channel="chrome",

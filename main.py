@@ -11,6 +11,7 @@ import re
 from pylatexenc.latex2text import LatexNodes2Text
 
 from patchright.sync_api import sync_playwright
+from patchright.async_api import async_playwright
 
 
 _RT_LOCK_MISSING = object()
@@ -225,6 +226,54 @@ def fetch_page_html(
             return page.content()
         finally:
             context.close()
+
+
+async def fetch_page_html_async(
+    url: str,
+    user_data_dir: Path | str | None = None,
+    *,
+    channel: str = "chromium",
+    headless: bool = False,
+    bypass_extension_dir: Path | str | None = None,
+    wait_until: str = "domcontentloaded",
+    timeout_ms: int = 30000,
+) -> str:
+    """Async variant for event-loop contexts (e.g., MCP server)."""
+    user_data_path = Path(user_data_dir) if user_data_dir else Path(".patchright-profile")
+    user_data_path.mkdir(parents=True, exist_ok=True)
+
+    args: list[str] = []
+    if bypass_extension_dir:
+        extension_path = Path(bypass_extension_dir).expanduser().resolve()
+        if not extension_path.exists():
+            raise FileNotFoundError(
+                f"Bypass extension path does not exist: {extension_path}"
+            )
+
+        args.extend(
+            [
+                f"--disable-extensions-except={extension_path}",
+                f"--load-extension={extension_path}",
+            ]
+        )
+
+    async with async_playwright() as p:
+        context = await p.chromium.launch_persistent_context(
+            user_data_dir=str(user_data_path),
+            channel=channel,
+            headless=headless,
+            no_viewport=True,
+            **({"args": args} if args else {}),
+        )
+        try:
+            page = await context.new_page()
+            try:
+                await page.goto(url, wait_until=wait_until, timeout=timeout_ms)
+            except Exception:
+                await page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
+            return await page.content()
+        finally:
+            await context.close()
 
 
 def run_patchright_install(channel: str = "chromium") -> None:
