@@ -2,6 +2,49 @@
 
 Fastwebfetch scrapes web pages with Patchright and converts extracted HTML into cleaned Markdown. It relies on the `datasets`, `markdownify`, `mdformat`, `tqdm`, `pylatexenc`, and `patchright` packages.
 
+## How to use (one-shot)
+
+The fastest way to run once and get Markdown output:
+
+```bash
+uv sync
+uv run main.py init
+uv run main.py "https://example.com" > output.md
+```
+
+If you already ran `init`, just run:
+
+```bash
+uv run main.py "https://example.com" > output.md
+```
+
+## MCP quickstart
+
+Run the MCP server directly from the repo URL:
+
+```bash
+uvx --from "git+https://github.com/trotsky1997/Fast-Web-Fetch.git" python -m mcp_server
+```
+
+Example client config (stdio server):
+
+```json
+{
+  "servers": {
+    "fastwebfetch": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/trotsky1997/Fast-Web-Fetch.git",
+        "python",
+        "-m",
+        "mcp_server"
+      ]
+    }
+  }
+}
+```
+
 ## Features
 
 - Patchright-based scraping with a persistent browser profile.
@@ -45,22 +88,6 @@ Fastwebfetch scrapes web pages with Patchright and converts extracted HTML into 
 uv sync
 uv run main.py init
 uv run main.py "https://example.com"
-```
-
-## How to use (one-shot)
-
-The fastest way to run once and get Markdown output:
-
-```bash
-uv sync
-uv run main.py init
-uv run main.py "https://example.com" > output.md
-```
-
-If you already ran `init`, just run:
-
-```bash
-uv run main.py "https://example.com" > output.md
 ```
 
 ## Development
