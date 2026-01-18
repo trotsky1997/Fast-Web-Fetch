@@ -1,7 +1,12 @@
 # -=encoding=utf-8=-
 import argparse
+import os
 import subprocess
 import sys
+import tempfile
+import urllib.request
+import zipfile
+from shutil import rmtree
 from pathlib import Path
 
 from markdownify import markdownify
@@ -15,6 +20,10 @@ from patchright.async_api import async_playwright
 
 
 _RT_LOCK_MISSING = object()
+_DEFAULT_EXTENSION_URL = os.getenv(
+    "FASTWEBFETCH_PAYWALL_URL",
+    "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass-paywalls-chrome-clean-master.zip",
+)
 
 
 def _ensure_resource_tracker_lock() -> None:
@@ -288,6 +297,43 @@ def run_patchright_install(channel: str = "chromium") -> None:
         ) from exc
 
 
+def ensure_extension_assets(extension_dir: Path | str) -> None:
+    extension_path = Path(extension_dir)
+    if extension_path.exists():
+        return
+
+    extension_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        zip_path = Path(temp_dir) / "bypass-paywalls-chrome-clean.zip"
+        try:
+            with urllib.request.urlopen(_DEFAULT_EXTENSION_URL) as response:
+                zip_path.write_bytes(response.read())
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to download paywall extension from {_DEFAULT_EXTENSION_URL}. "
+                "Set FASTWEBFETCH_PAYWALL_URL to a reachable ZIP URL."
+            ) from exc
+
+        with zipfile.ZipFile(zip_path) as archive:
+            archive.extractall(temp_dir)
+
+        extracted_dir = next(
+            (
+                path
+                for path in Path(temp_dir).iterdir()
+                if path.is_dir() and path.name.startswith("bypass-paywalls-chrome-clean-")
+            ),
+            None,
+        )
+        if extracted_dir is None:
+            raise RuntimeError("Unable to locate extracted paywall extension directory.")
+
+        if extension_path.exists():
+            rmtree(extension_path)
+        extracted_dir.replace(extension_path)
+
+
 def run_init(argv: list[str] | None = None) -> None:
     """Convenience command that prepares Patchright and bypass assets."""
     parser = argparse.ArgumentParser(
@@ -330,9 +376,7 @@ def run_init(argv: list[str] | None = None) -> None:
     if not args.skip_extension_check:
         extension_path = Path(args.paywall_extension_dir)
         if not extension_path.exists():
-            raise FileNotFoundError(
-                f"Expected bypass extension assets at {extension_path}, but the directory is missing."
-            )
+            ensure_extension_assets(extension_path)
 
     print("Initialization finished.")
     print(f"  · Browser data dir ready at {user_data_path.resolve()}")

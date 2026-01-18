@@ -66,6 +66,7 @@ Example client config (stdio server):
 ## Initialization
 
 - Run `uv run main.py init` as a one-shot setup command to install Chromium via Patchright, create the persistent profile directory, and validate that the bundled `extensions/bypass-paywalls-chrome-clean` assets exist.
+- When the bypass extension is missing, init downloads it automatically from GitFlic; override the URL with `FASTWEBFETCH_PAYWALL_URL` if needed.
 - The `init` command accepts the same `--browser-data-dir` as the scraper, plus `--channel` (defaults to `chromium`) to choose the Patchright browser and `--paywall-extension-dir` when you moved the bypass extension.
 - Skip the automatic browser install with `--skip-chrome-install` (useful when the requested browser is already available). Re-running `init` is safe and simply updates the profile directory and reconfirms the assets.
 
