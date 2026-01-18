@@ -6,3 +6,4 @@ vendor/readability/Readability.js
 uv.lock
 .python-version
 vendor
+__pycache__
