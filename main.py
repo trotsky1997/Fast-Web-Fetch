@@ -491,7 +491,7 @@ def cli():
     )
     parser.add_argument(
         "--summary-model",
-        default="HuggingFaceTB/SmolLM2-135M-Instruct",
+        default="unsloth/gemma-3-270m-it",
         help="Model checkpoint to use for summarization.",
     )
     parser.add_argument(
